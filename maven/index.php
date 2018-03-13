@@ -19,6 +19,7 @@ $dirSplit = substr($dir, 19);
  * If the file has no extension, this will just return 'File'.
  * 
  * @param string $filename The file name
+ * @param string $basedir The directory the file is in, ending with '/'
  * @return string The description for the file
  */
 function findDescription($filename, $basedir) {
