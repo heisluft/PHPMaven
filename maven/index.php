@@ -1,27 +1,33 @@
 <?php
 /************************************************************
- * This is a file viewer to be put in every maven directory *
+ * This is a file viewer to be put in root maven directory *
  ***********************************************************/
 
 //Hide index.php
 if(substr($_SERVER['REQUEST_URI'], -9) == "index.php") die(header("HTTP/1.0 404 Not Found"));
 
-//Get the directory name
-$dir = dirname(__FILE__);
+//Get the scripts directory name
+$dir = dirname(__FILE__) . (isset($_GET['path']) ? "/" . $_GET['path'] : "");
+if(substr($dir, -1) != "/") $dir = $dir . "/";
+
 //Required on filehosts like mine where the www root is not labeled as '/'
 $dirSplit = substr($dir, 19);
 
 /**
- * Gets the files description. Returns 'Directory' if file is directory or contains no dot,
+ * Gets the files description. Returns 'Directory' if file is directory,
  * else the uppercased file extension + '-File', e.g. 'PHP-File'.
+ * If the file has no extension, this will just return 'File'.
  * 
- * @param string $file
+ * @param string $filename The file name
  * @return string The description for the file
  */
-function findDescription($file) {
-    if(is_dir($file)) return "Directory";
-    $splitName = explode(".", $file);
-    return strtoupper($splitName[count($splitName) - 1]) . "-File";
+function findDescription($filename, $basedir) {
+    if(is_dir($basedir . $filename)) return "Directory";
+    if (strpos($filename, '.') !== false) {
+        $splitName = explode(".", $filename);
+        return strtoupper($splitName[count($splitName) - 1]) . "-File";
+    }
+    return "File";
 }
 ?>
 <!DOCTYPE html>
@@ -83,14 +89,14 @@ thead tr {
 <tbody>
 <?php foreach (scandir($dir) as $file) {
     // Do not show link to this directory, hide index.php
-    if($file != "index.php" && $file != ".") {
-        if(is_dir($file)) {
+    if($file != "index.php" && $file != "." && $file != ".htaccess") {
+        if(is_dir($dir . $file)) {
             // Directories end with '/', looks better
             $file = $file . "/";
             // Directories don't 'have' a size
             $size = "-";
-        } else $size = filesize($file) . "b";
-        echo "<tr>\n<td>\n<a href=\"$file\">$file</a>\n</td>\n<td>" . findDescription($file) . "</td>\n<td>$size</td>\n<td>". date("Y-m-d H:i" ,filemtime($file)) ."</td>\n</tr>\n";
+        } else $size = filesize($dir . $file) . "b";
+        echo "<tr>\n<td>\n<a href=\"$file\">$file</a>\n</td>\n<td>" . findDescription($file, $dir) . "</td>\n<td>$size</td>\n<td>" . date("Y-m-d H:i" , filemtime($dir . $file)) . "</td>\n</tr>\n";
     }
 }?>
 </tbody>
