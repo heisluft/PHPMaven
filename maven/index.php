@@ -3,11 +3,8 @@
  * This is a file viewer to be put in root maven directory *
  ***********************************************************/
 
-//Hide index.php
-if(substr($_SERVER['REQUEST_URI'], -9) == "index.php") die(header("HTTP/1.0 404 Not Found"));
-
 //Get the scripts directory name
-$dir = dirname(__FILE__) . (isset($_GET['path']) ? "/" . $_GET['path'] : "");
+$dir = str_replace('\\', '/', dirname(__FILE__)) . (isset($_GET['path']) ? "/" . $_GET['path'] : "");
 if(substr($dir, -1) != "/") $dir = $dir . "/";
 
 //Required on filehosts like mine where the www root is not labeled as '/'

@@ -1,6 +1,10 @@
-### htaccess file rewrites everything to an index.php query, PUT Requests on non-existent sources are ugly ###
+### htaccess file rewrites every query to a directory to an index.php query and hides the index.php itself ###
 
 RewriteEngine on
+
+# Hide index.php
+RewriteRule ^/?index\.php(|\?.*)$ - [R=404,L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^(.*)$ /index.php?path=$1 [NC,L,QSA]
+RewriteRule ^(.*)$ index.php?path=$1 [END]
