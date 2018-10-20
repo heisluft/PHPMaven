@@ -11,7 +11,7 @@
  * @return bool Whether the name is valid
  */
 function isValid($input, $isUploaded) {
-    if($isUploaded === true) $res = preg_match_all('/.+\/(maven-metadata\.xml(\.(sha1|md5)|$))|(.+\.(jar|pom)(\.(sha1|md5)|$))/', $input);
+    if($isUploaded === true) $res = preg_match_all('/.+\/(maven-metadata\.xml|.*\/(.+\.(jar|pom)(\.asc|)))(\.(sha1|md5)|)$/', $input);
     else $res = preg_match_all('/.+\/(maven-metadata\.xml(\.(sha1|md5)|))$/', $input);
     return $res != false && $res > 0;
 }
