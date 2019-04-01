@@ -1,0 +1,13 @@
+{
+  "__AUTHENTICATION": "All settings regarding authentication",
+  "authentication": {
+    "__REQUIRED": "Whether authentication is required when uploading artifacts",
+    "required": true,
+    "__CREDENTIALS": "An array of all valid login credentials, as key-value pair",
+    "credentials": [
+      {
+        "sampleUser": "samplePassword"
+      }
+    ]
+  }
+}
