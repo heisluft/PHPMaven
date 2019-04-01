@@ -1,4 +1,0 @@
-### htaccess file rewrites everything to an index.php query, PUT Requests on non-existent sources are ugly ###
-
-RewriteEngine on
-RewriteRule ^(.*)$ index.php?path=$1 [NC,L,QSA]

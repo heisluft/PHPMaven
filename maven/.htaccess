@@ -1,10 +1,12 @@
-### htaccess file rewrites every query to a directory to an index.php query and hides the index.php itself ###
+### rewrites every PUT request to an index.php query. GET Requests to directories are also passed on.
+### Also gives the illusion of no index.php file being used
 
 RewriteEngine on
-
-# Hide index.php
-RewriteRule ^/?index\.php(|\?.*)$ - [R=404,L]
-
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^(.*)$ index.php?path=$1 [END]
+# 404 if user tries to access index.php directly
+RewriteCond %{REQUEST_FILENAME} ^/?index\.php(|/.*)$
+RewriteRule (.*)$ - [R=404,L]
+# Activate the file viewer only if a directory is requested
+RewriteCond %{REQUEST_FILENAME} -d [OR]
+# Always forward PUT requests
+RewriteCond %{REQUEST_METHOD} (PUT) [NC]
+RewriteRule ^(.*)$ index.php?path=$1 [NC,L,QSA]

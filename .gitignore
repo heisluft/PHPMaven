@@ -1,4 +1,3 @@
-#eclipse
-/.settings
-.project
-.buildpath
+!/maven/index.php
+!/maven/.htaccess
+/maven/*
