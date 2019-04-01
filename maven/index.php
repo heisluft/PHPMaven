@@ -46,11 +46,13 @@ function getFileName(string $input): string {
  *
  * @param string $filename The file name
  * @param string $basedir the directory to scan from
+ *
  * @return string The description for the file
  */
 function findDescription(string $filename, string $basedir): string {
-  if(is_dir($basedir . $filename)) return "Directory";
-  if (strpos($filename, '.') !== false) {
+  if(is_dir($basedir . $filename))
+    return "Directory";
+  if(strpos($filename, '.') !== false) {
     $splitName = explode(".", $filename);
     return strtoupper($splitName[count($splitName) - 1]) . "-File";
   }
@@ -63,6 +65,37 @@ if($_SERVER['REQUEST_METHOD'] == "PUT") {
     header("HTTP/1.0 404 Not Found");
     die();
   }
+  // AUTHORIZATION
+  $config = json_decode(file_get_contents("repo.json"), true);
+  if($config === null || $config == false || !isset($config["authentication"]) || !isset($config["authentication"]["required"])) {
+    // The config is invalid or missing. abort.
+    header("HTTP/1.0 500 Internal Server Error");
+    die();
+  }
+  if($config["authentication"]["required"]) {
+    if(!isset($_SERVER["PHP_AUTH_USER"])) {
+      header('WWW-Authenticate: Basic realm="TEST"');
+      header("HTTP/1.0 401 Unauthorized");
+      die();
+    }
+    if(!isset($config["authentication"]["credentials"]) || count($config["authentication"]["credentials"]) < 1) {
+      // The config is missing credentials. abort.
+      header("HTTP/1.0 501 Internal Server Error");
+      die();
+    }
+    $matched = false;
+    foreach($config["authentication"]["credentials"] as $pair) {
+      foreach($pair as $uname => $password)
+      if($uname == $_SERVER["PHP_AUTH_USER"] && $password == $_SERVER["PHP_AUTH_PW"])
+        $matched = true;
+    }
+    if(!$matched) {
+      //provided credentials are invalid
+      header("HTTP/1.0 401 Authentification failed: Wrong username or password!");
+      die();
+    }
+  }
+
   $path = $_GET['path'];
   //Get The Actual Filename
   $filename = getFileName($path);
@@ -106,15 +139,16 @@ if($_SERVER['REQUEST_METHOD'] == "PUT") {
   die();
 } else {
   $dir = str_replace("\\", "/", dirname(__FILE__)) . (isset($_GET['path']) ? "/" . $_GET['path'] : "");
-  if(substr($dir, -1) != "/") $dir = $dir . "/";
+  if(substr($dir, -1) != "/")
+    $dir = $dir . "/";
 
   //Required on filehosts like mine where the www root is not labeled as '/'
   $dirSplit = substr($dir, 19);
-}?>
+} ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Index of <?php echo $dirSplit?></title>
+  <title>Index of <?php echo $dirSplit ?></title>
   <style type="text/css">
     h1 {
       text-align: center;
@@ -144,7 +178,7 @@ if($_SERVER['REQUEST_METHOD'] == "PUT") {
     }
 
     tr:nth-child(odd) {
-      background-color:#fff;
+      background-color: #fff;
     }
 
     tr:nth-child(even) {
@@ -157,7 +191,7 @@ if($_SERVER['REQUEST_METHOD'] == "PUT") {
   </style>
 </head>
 <body>
-<h1>Index of <?php echo $dirSplit?></h1>
+<h1>Index of <?php echo $dirSplit ?></h1>
 <table>
   <thead>
   <tr>
@@ -168,18 +202,18 @@ if($_SERVER['REQUEST_METHOD'] == "PUT") {
   </tr>
   </thead>
   <tbody>
-  <?php foreach (scandir($dir) as $file) {
-    // Do not show link to this directory, hide index.php & .htaccess
-    if($file != "index.php" && $file != "." && $file != ".htaccess") {
+  <?php foreach(scandir($dir) as $file) {
+    // Do not show link to this directory, hide index.php, repo.json & .htaccess
+    if($file != "index.php" && $file != "." && $file != ".htaccess" && $file != "repo.json") {
       if(is_dir($dir . $file)) {
         // Directories end with '/', looks better
         $file = $file . "/";
         // Directories don't 'have' a size
         $size = "-";
       } else $size = filesize($dir . $file) . "b";
-      echo "<tr>\n<td>\n<a href=\"$file\">$file</a>\n</td>\n<td>" . findDescription($file, $dir) . "</td>\n<td>$size</td>\n<td>" . date("Y-m-d H:i" , filemtime($dir . $file)) . "</td>\n</tr>\n";
+      echo "<tr>\n<td>\n<a href=\"$file\">$file</a>\n</td>\n<td>" . findDescription($file, $dir) . "</td>\n<td>$size</td>\n<td>" . date("Y-m-d H:i", filemtime($dir . $file)) . "</td>\n</tr>\n";
     }
-  }?>
+  } ?>
   </tbody>
 </table>
 </body>
